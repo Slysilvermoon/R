@@ -1,0 +1,125 @@
+---
+title: "dataCleanup"
+author: "Vaibhav Bhatt"
+date: "14/12/2021"
+output: html_document
+
+---
+## R Markdown
+```{r, include=FALSE}
+library(tidyverse)
+
+# data downloaded and read into R
+
+data <- read_csv("/Users/vaibhavbhatt/Downloads/StormEvents_details-ftp_v1.0_d1988_c20210803.csv")
+```
+
+
+```{r}
+# manipulating the data
+# selecting the necessary columns
+
+my.data <- data
+# show the names of the columns
+names(my.data)
+
+# keeping the columns:
+# "EPISODE_ID", "EVENT_ID", "STATE", "STATE_FIPS", "BEGIN_DATE_TIME", #"END_DATE_TIME", "CZ_TYPE", "CZ_NAME", "SOURCE", #"BEGIN_LAT", "BEGIN_LON", "END_LAT", "END_LON"))
+my.data.new <- my.data[c(7, 8, 9, 10, 14, 15, 16, 18, 20, 27, 45, 46, 47, 48)]
+names(my.data.new)
+```
+
+```{r}
+
+#converting the BEGIN_DATE_TIME, END_DATE_TIME to date time
+library(datetime)
+
+my.data.new$BEGIN_DATE_TIME <- as.datetime(my.data.new$BEGIN_DATE_TIME)
+my.data.new$END_DATE_TIME <- as.datetime(my.data.new$END_DATE_TIME)
+
+```
+
+```{r}
+# converting to lowercase
+my.data.new$STATE = tolower(my.data.new$STATE)
+my.data.new
+```
+
+```{r}
+# limiting data with CZ_FIPS
+
+my.data.new$CZ_TYPE <- my.data.new$CZ_TYPE[(my.data.new$CZ_TYPE == "C")]
+my.data.new
+```
+
+```{r}
+# removing column in CZ_TYPE
+my.data.new <- my.data.new[-c(5)]
+my.data.new
+
+```
+
+```{r}
+# padding with 0s
+library(stringr)
+my.data.new$STATE_FIPS <- str_pad(my.data.new$STATE_FIPS, width=4, pad="0")
+my.data.new$CZ_FIPS <- str_pad(my.data.new$CZ_FIPS, width=4, pad="0")
+my.data.new
+
+```
+
+```{r}
+# combining the two columns into a new column in R
+my.data.new$FIPS <- str_c(my.data.new$STATE_FIPS, '', my.data.new$CZ_FIPS)
+my.data.new
+```
+
+```{r}
+# changing the column names to lower case
+colnames(my.data.new) <- tolower(colnames(my.data.new))
+my.data.new
+```
+
+```{r}
+# creating data frame for state name, area, and region
+my.states <- data.frame(state.name, state.area, state.region, stringsAsFactors = FALSE)
+my.states
+# renaming state.name column to state
+
+```
+
+```{r}
+# frequency of events per state
+new.frequency.set <- data.frame(table(my.data.new$state))
+new.frequency.set <- rename(new.frequency.set, c("state" = "Var1"))
+new.frequency.set
+
+```
+
+```{r}
+new.state.set <- merge(x=my.data.new, y=new.frequency.set, by.x="state", by.y="state")
+
+```
+
+```{r}
+
+my.states$state.name <- tolower(my.states$state.name)
+
+storm <- merge(x = new.state.set, y=my.states, by.x = "state", by.y = "state.name")
+```
+
+
+```{r}
+library(ggplot2)
+
+plot1 <- ggplot(storm, aes(x = "state.area", y = "Freq")) +
+  geom_point(aes(color=state)) + 
+  labs(x = "area of the state", y = "number of storm events")
+
+plot1
+
+```
+
+
+
+
