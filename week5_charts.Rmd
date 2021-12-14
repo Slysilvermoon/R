@@ -1,0 +1,56 @@
+---
+title: "week5_charts"
+author: "Vaibhav Bhatt"
+date: "14/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r file}
+
+local_file <- "/Users/vaibhavbhatt/Downloads/mmsa-icu-beds.csv"
+
+library(tidyverse)
+# reading csv data using "readr" package and storing it in a variable "csv_data" using "read_csv"
+csv_data <- read_csv(local_file)
+
+```
+
+```{r plot1}
+
+# Plot1
+# plotting relation between number of hospitals and number of icu_beds
+library(ggplot2)
+
+plot1 <- ggplot(csv_data, (aes(x = icu_beds, y = hospitals))) + 
+                  geom_point()
+
+plot1
+```
+
+```{r plot2}
+
+#plot 2
+
+# plotting the variations in icu_beds by the county
+plot2 <- ggplot(csv_data, (aes(x = icu_beds))) + 
+  geom_histogram()
+
+plot2
+
+```
+
+```{r plot3}
+
+plot3 <- ggplot(csv_data, (aes(x = icu_beds, y = hospitals))) + 
+  geom_line()
+
+plot3
+
+```
+
+
+
